@@ -1,3 +1,6 @@
 data/*.mat
 src/*.asv
 src/*.avi
+src/*.jpg
+src/backup
+src/extra

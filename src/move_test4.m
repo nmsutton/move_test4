@@ -2,16 +2,16 @@
 % Nate Sutton 2022
 clear all;
 clc;
-simdur = 500;%1010;%490;%1300;%100e3; % total simulation time, ms
-spiking_bin = 10;
+simdur = 610;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
+spiking_bin = 40;
 
 ncells = 900; % total number of cells per layer
 Ne=ncells; Ni=ncells;
-a=[0.02*ones(Ne,1)];
+a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
 b=[0.2*ones(Ne,1)];
 c=[-65*ones(Ne,1)];
 d=[8*ones(Ne,1)];
-ai=[0.02*ones(Ni,1)];
+ai=[0.1*ones(Ni,1)];%ai=[0.02*ones(Ni,1)];
 bi=[0.25*ones(Ni,1)];
 ci=[-65*ones(Ni,1)];
 di=[2*ones(Ni,1)];
@@ -28,14 +28,20 @@ vi=-65*ones(Ni,1); % inhib neurons
 ui=bi.*vi;
 load('Ii_initial2.mat'); % initial gc firing
 Ii = Ii_initial2;
-Ie2 = zeros(ncells,1);
-Ii3 = zeros(ncells,1);
+load('gc_ie_initial.mat'); % initial gc firing
+gc_ie = gc_ie_initial;
+%gc_ie = Ii_initial2;%zeros(ncells,1);
+load('in_ii_initial.mat'); % initial gc firing
+in_ii = in_ii_initial;
+%in_ii = zeros(ncells,1);
 load('init_firings4.mat'); % initial gc firing
 firings = init_firings4;
-gc_firings = [10,5];
-in_firings = [10,5];
+gc_firings = init_firings4;%[10,5];
+load('in_firings_init.mat');
+in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
-Ie=68*(B.^10)'; % excitatory input
+ext_ie=68*(B.^10)'; % excitatory input
+%ext_ie=50*(B.^10)'; % excitatory input
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;
 mex_hat = mex_hat-0.0022;
@@ -74,23 +80,29 @@ myMovie = struct('cdata', allTheFrames, 'colormap', allTheColorMaps);
 set(gcf, 'nextplot', 'replacechildren'); 
 set(gcf, 'renderer', 'zbuffer');
 caxis manual;          % allow subsequent plots to use the same color limits
+gc_voltage=[]; in_voltage=[];
+nrn_monit=702;%435;%772;%702;
+in_fired=[];
 
 for t=skip_t:simdur % simulation of 1000 ms
-	gc_fired=find(vi>=30); % indices of spikes
+	gc_fired=find(v>=30); % indices of spikes
 	gc_firings=[gc_firings; t+0*gc_fired,gc_fired];
-    [Ie2, vi, ui] = gc_in_signal(Ie2, t, gc_fired, gc_firings, vi, ui, p2, gcintau, ncells);
+    [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit);
 	in_fired=find(vi>=30); % indices of spikes
     in_firings=[in_firings; t+0*in_fired,in_fired];
-    Ii3 = in_gc_signal(t, mex_hat, in_firings, ncells, Ii3, gcintau);
+    [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit);
+    %in_ii = 5*ones(900,1);
+    [v, u] = iznrn(v, u, p, gc_fired, ext_ie, in_ii);
+    in_voltage(end+1)=vi(nrn_monit);
 
-    fired=find(v>=30); % indices of spikes
-	firings=[firings; t+0*fired,fired];
-	Ii = inhib_curr(Ii, t, mex_hat, firings, tau);
-	%Ie = Ie .* (1 + (rand(ncells,1)*.02)); % add some random noise
-	%Ie = Ie .* (1 - (rand(ncells,1)*.02)); % subtract some random noise
-	[v, u] = iznrn(v, u, p, fired, Ie, Ii);
+	%Ii = inhib_curr(Ii, t, mex_hat, gc_firings, tau, nrn_monit);
+	%voltage(end+1)=Ii(772);
+	%Ii = 5*ones(900,1);
+	%[v, u] = iznrn(v, u, p, gc_fired, ext_ie, Ii);
+	%voltage(end+1)=v(nrn_monit);
+	gc_voltage(end+1)=v(nrn_monit);
 	if savevideo & mod(t,spiking_bin) == 0
-		myMovie = heatmap(ncells, firings, t, skip_t, h, myMovie, ccol, spiking_bin);
+		myMovie = heatmap(ncells, gc_firings, t, skip_t, h, myMovie, ccol, spiking_bin);
     end
 end
 
@@ -103,12 +115,37 @@ if savevideo
 	close(videofile)
 end
 
+disp(size(find(gc_firings(:,2)==nrn_monit))); % number of spikes from selected neuron
+%disp("voltage");
+%disp(voltage);
+if false
+	figure(1);
+	plot(gc_voltage);
+	ylim([-80 30])
+	title("gc voltage")
+	figure(2);
+	plot(in_voltage);
+	ylim([-80 30])
+	title("in voltage")
+end
+
 function [v, u] = iznrn(v, u, p, fired, Ie, Ii)
 	a=p(:,1);b=p(:,2);c=p(:,3);d=p(:,4);
 	v(fired)=c(fired);
 	u(fired)=u(fired)+d(fired);
 	v=v+(0.04*v.^2+5*v+140-u+Ie-Ii); % step 1.0 ms
 	u=u+a.*(b.*v-u);
+
+	% avoid NaN issue
+	nans = find(isnan(v));
+	if size(nans)>0
+		v(nans) = c(1);
+	end
+	% hard limit on v to avoid inf value issue
+	highval = find(v>1000000);
+	if size(highval)>0
+		v(highval) = c(1);
+	end
 end
 
 function spikes = fbin(ni, startt, endt, firings) 
@@ -124,7 +161,7 @@ function spikes = fbin(ni, startt, endt, firings)
 end
 
 function spike_found = find_spike(ni, t, firings) 
-	% report spike times in a bin of time
+	% report spike times in a bin of time. detect current spikes in current ms.
 	spike_found = false;
 	all_spike_times = (find(firings(:,2)==ni));
 	for si=1:size(all_spike_times)
@@ -135,8 +172,11 @@ function spike_found = find_spike(ni, t, firings)
     end
 end
 
-function [Ie2, vi, ui] = gc_in_signal(Ie2, t, gc_fired, gc_firings, vi, ui, p2, gcintau, ncells)
-    % generate inhibitory currents
+% todo: replacing gc_firing*cen_sur=in_current_to_gc
+% gc_firing*syn_wt=current_to_in; iz_nrn(current_to_in)=in_firing;
+% in_firing*cen_sur=current_to_gc
+function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit)
+    % generate gc to in signaling
     o = ones(ncells,1);    
 	gc_firing = zeros(ncells); 
 	for i=1:ncells
@@ -145,19 +185,22 @@ function [Ie2, vi, ui] = gc_in_signal(Ie2, t, gc_fired, gc_firings, vi, ui, p2, 
 	        gc_firing(:,i) = gc_firing(:,i)+1;
 	    end    
     end
-	% todo: replacing gc_firing*cen_sur=in_current_to_gc
-	% gc_firing*syn_wt=current_to_in; iz_nrn(current_to_in)=in_firing;
-	% in_firing*cen_sur=current_to_gc
-    gc_to_in_wt = 1; % gc to in synapse weight
+    gc_to_in_wt = 0.2;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 	gcin_current = (gc_to_in_wt*gc_firing')';
 	gcin_summed = gcin_current'*o;    
-    Ie2 = Ie2 + (gcin_summed - Ie2)/gcintau;
-	Ii2 = zeros(1,900)';
-	[vi, ui] = iznrn(vi, ui, p2, gc_fired, Ie2, Ii2);
+    gc_ie = gc_ie + (gcin_summed - gc_ie)/gcintau;
+    %disp(gc_firing(772));
+   	%disp(gc_ie(772));
+   	%fprintf("t:%d i:%f\n",t,gc_ie(772));
+	gc_ii = zeros(1,900)';
+	n= ncells;
+	%fprintf("t:%d %f=%f+(0.04*%f.^2+5*%f+140-%f+%f-%f)\n",t,(vi(n)+(0.04*vi(n).^2+5*vi(n)+140-ui(n)+gc_ie(n)-gc_ii(n))),vi(n),vi(n),vi(n),ui(n),gc_ie(n),gc_ii(n));	
+	[vi, ui] = iznrn(vi, ui, p2, in_fired, gc_ie, gc_ii);
+	%fprintf("t:%d vi:%f\n",t,vi(nrn_monit));
 end
 
-function Ii3 = in_gc_signal(t, mex_hat, in_firings, ncells, Ii3, gcintau);
-	% generate in to gc signalings
+function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit);
+	% generate in to gc signaling
 	o = ones(ncells,1);
 	in_firing = zeros(ncells); 
 	for i=1:ncells
@@ -166,14 +209,17 @@ function Ii3 = in_gc_signal(t, mex_hat, in_firings, ncells, Ii3, gcintau);
 	        in_firing(:,i) = in_firing(:,i)+1;
 	    end    
     end
-    in_current = (mex_hat*in_firing')';
-    in_to_gc_wt = 1; % in to gc synapse weight
+    in_to_gc_wt = .39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 	ingc_current = ((mex_hat*in_to_gc_wt)*in_firing')';
+	%fprintf("t:%d i:%d\n",t,sum(find(in_firing(1,:)>=1),1));
+	%fprintf("t:%d s:%d\n",t,sum(in_firing(1,:)));
+	%disp(in_firing(1,:));
 	ingc_summed = ingc_current'*o;  
-    Ii3 = Ii3 + (ingc_summed - Ii3)/gcintau;
+    in_ii = in_ii + (ingc_summed - in_ii)/gcintau;
+    fprintf("t:%d i:%f\n",t,in_ii(nrn_monit));
 end
 
-function Ii = inhib_curr(Ii, t, mex_hat, firings, tau)
+function Ii = inhib_curr(Ii, t, mex_hat, firings, tau, nrn_monit)
 	% generate inhibitory currents
 	gc_firing = zeros(size(mex_hat,1)); 
 	for i=1:size(Ii)
@@ -183,12 +229,14 @@ function Ii = inhib_curr(Ii, t, mex_hat, firings, tau)
 	    end    
     end
     in_current = (mex_hat*gc_firing')';
+    fprintf("t:%d s:%d\n",t,sum(gc_firing(1,:)));
 
 	% calculate tau factor
 	o = ones(size(mex_hat(:,1)));
 	in_summed = in_current'*o; in_summed2 = in_summed;
 	in_summed2 = in_summed2.*(in_summed2>0); % no negative values
 	Ii = Ii + (in_summed2 - Ii)/tau;
+	%fprintf("t:%d i:%f\n",t,Ii(nrn_monit));
 end
 
 function myMovie = heatmap(ncells, firings, t, skip_t, h, myMovie, ccol, spiking_bin)
@@ -197,7 +245,7 @@ function myMovie = heatmap(ncells, firings, t, skip_t, h, myMovie, ccol, spiking
 		temp = [];
 		for j=1:sqrt(ncells)
 			nrn_i = ((i-1)*sqrt(ncells))+j;
-			spk_t = fbin(nrn_i, t-10, t, firings);
+			spk_t = fbin(nrn_i, t-spiking_bin, t, firings);
 			temp = [temp; spk_t(1,1)];
 		end
 		binned_firing = [binned_firing; temp'];
@@ -214,9 +262,11 @@ function myMovie = heatmap(ncells, firings, t, skip_t, h, myMovie, ccol, spiking
     axis('tight')
 	title({sprintf('t = %.1f ms',t),'Population activity'})
 	set(gca,'ydir','normal')
-    caxis([0 4.0])
+    %caxis([0 4.0])
+    caxis([0 8.0])
 	cb = colorbar;
-	set(cb, 'ylim', [0 5.5]); % set colorbar range
+	%set(cb, 'ylim', [0 5.5]); % set colorbar range
+	set(cb, 'ylim', [0 8.5]); % set colorbar range
 	drawnow
 	thisFrame = getframe(gcf);
     %frames_number = (t-(skip_t-1))/spiking_bin + 1
