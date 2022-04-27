@@ -2,7 +2,7 @@
 % Nate Sutton 2022
 clear all;
 clc;
-simdur = 610;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
+simdur = 1010;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
 spiking_bin = 40;
 
 ncells = 900; % total number of cells per layer
@@ -18,8 +18,8 @@ di=[2*ones(Ni,1)];
 p = [a, b, c, d];
 p2 = [ai, bi, ci, di];
 tau = 35; %% Cell parameters % grid cell synapse time constant, ms
-gcintau = 35;
-ingctau = 35;
+gcintau = 30;%35;
+ingctau = 30;%35;
 t = 0; % simulation time variable, ms
 skip_t = 10; % initial time to skip because pregenerated initial firing is loaded in this time
 v=-65*ones(Ne,1); % Initial values of v
@@ -40,27 +40,27 @@ gc_firings = init_firings4;%[10,5];
 load('in_firings_init.mat');
 in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
-ext_ie=68*(B.^10)'; % excitatory input
-%ext_ie=50*(B.^10)'; % excitatory input
+%ext_ie=68*(B.^20)'; % excitatory input
+ext_ie=60*(B.^22)'; % excitatory input
+pd_match=88;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_nonmatch=60;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
+gc_to_in_wt = 0.2;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
+in_to_gc_wt = .45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
-if false
-    max_ind = sqrt(size(mex_hat(:,1)));
+if true
+    max_ind = sqrt(size(mex_hat(:,1),1));
     for x = 1:max_ind
         for y = 1:max_ind
-            ind = ((y-1) * max_ind) + x;
-            if (get_pd(x,y) ~= 'r')                
-                %mex_hat(:,ind) = .1;
-                %mex_hat(:,ind) = 0;
-                Ie(ind) = 1.1;%1.0;
-                %B(ind) = .5;
+            ind = ((y-1) * max_ind) + x
+            if (get_pd(x,y) == 'r')       
+                ext_ie(ind) = pd_match;               
             else
-                Ie(ind) = 1.0;%.5;
+                ext_ie(ind) = pd_nonmatch;
             end
-            %B(ind) = 1;
         end
     end
 end
@@ -87,19 +87,15 @@ in_fired=[];
 for t=skip_t:simdur % simulation of 1000 ms
 	gc_fired=find(v>=30); % indices of spikes
 	gc_firings=[gc_firings; t+0*gc_fired,gc_fired];
-    [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit);
+    [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit, gc_to_in_wt);
 	in_fired=find(vi>=30); % indices of spikes
     in_firings=[in_firings; t+0*in_fired,in_fired];
-    [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit);
-    %in_ii = 5*ones(900,1);
+    [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit, in_to_gc_wt);
     [v, u] = iznrn(v, u, p, gc_fired, ext_ie, in_ii);
     in_voltage(end+1)=vi(nrn_monit);
 
 	%Ii = inhib_curr(Ii, t, mex_hat, gc_firings, tau, nrn_monit);
-	%voltage(end+1)=Ii(772);
-	%Ii = 5*ones(900,1);
 	%[v, u] = iznrn(v, u, p, gc_fired, ext_ie, Ii);
-	%voltage(end+1)=v(nrn_monit);
 	gc_voltage(end+1)=v(nrn_monit);
 	if savevideo & mod(t,spiking_bin) == 0
 		myMovie = heatmap(ncells, gc_firings, t, skip_t, h, myMovie, ccol, spiking_bin);
@@ -172,10 +168,7 @@ function spike_found = find_spike(ni, t, firings)
     end
 end
 
-% todo: replacing gc_firing*cen_sur=in_current_to_gc
-% gc_firing*syn_wt=current_to_in; iz_nrn(current_to_in)=in_firing;
-% in_firing*cen_sur=current_to_gc
-function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit)
+function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit, gc_to_in_wt)
     % generate gc to in signaling
     o = ones(ncells,1);    
 	gc_firing = zeros(ncells); 
@@ -185,7 +178,6 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
 	        gc_firing(:,i) = gc_firing(:,i)+1;
 	    end    
     end
-    gc_to_in_wt = 0.2;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 	gcin_current = (gc_to_in_wt*gc_firing')';
 	gcin_summed = gcin_current'*o;    
     gc_ie = gc_ie + (gcin_summed - gc_ie)/gcintau;
@@ -199,7 +191,7 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
 	%fprintf("t:%d vi:%f\n",t,vi(nrn_monit));
 end
 
-function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit);
+function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit, in_to_gc_wt);
 	% generate in to gc signaling
 	o = ones(ncells,1);
 	in_firing = zeros(ncells); 
@@ -209,14 +201,13 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 	        in_firing(:,i) = in_firing(:,i)+1;
 	    end    
     end
-    in_to_gc_wt = .39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 	ingc_current = ((mex_hat*in_to_gc_wt)*in_firing')';
 	%fprintf("t:%d i:%d\n",t,sum(find(in_firing(1,:)>=1),1));
 	%fprintf("t:%d s:%d\n",t,sum(in_firing(1,:)));
 	%disp(in_firing(1,:));
 	ingc_summed = ingc_current'*o;  
     in_ii = in_ii + (ingc_summed - in_ii)/gcintau;
-    fprintf("t:%d i:%f\n",t,in_ii(nrn_monit));
+    %fprintf("t:%d i:%f\n",t,in_ii(nrn_monit));
 end
 
 function Ii = inhib_curr(Ii, t, mex_hat, firings, tau, nrn_monit)
