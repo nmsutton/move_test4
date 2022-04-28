@@ -51,6 +51,20 @@ mex_hat = mex_hat.*(mex_hat>0); % no negative values
 gc_to_in_wt = 0.2;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 in_to_gc_wt = .45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
+% tm model synapse parameters
+global cap_u tau_u tau_x tau_d g u_ei x_ei u_ie x_ie
+cap_u = 0.2; % U, utilization
+tau_u = 40.0; % U signal decay time constant
+tau_x = 100.0; % x signal decay time constant
+tau_d = 5.0; % x signal decay time constant
+g = 1.0;
+u_ei = 0.0; % u before spike update
+x_ei = 1.0; % x before spike update
+u_ie = 0.0; % u before spike update
+x_ie = 1.0; % x before spike update
+%i = 1;
+%A = 2.0;
+
 if true
     max_ind = sqrt(size(mex_hat(:,1),1));
     for x = 1:max_ind
