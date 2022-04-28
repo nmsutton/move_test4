@@ -48,14 +48,14 @@ load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
-gc_to_in_wt = 47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
+gc_to_in_wt = 25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 in_to_gc_wt = .45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
 global cap_u tau_u tau_x tau_d g u_ei x_ei u_ie x_ie;
-cap_u = .8;%9;%0.2; % U, utilization
-tau_u = 30;%40.0; % U signal decay time constant
-tau_x = 15;%30;%100.0; % x signal decay time constant
+cap_u = .7;%.8;%9;%0.2; % U, utilization
+tau_u = 15;%40.0; % U signal decay time constant
+tau_x = 7.5;%15;%30;%100.0; % x signal decay time constant
 tau_d = 30.0; % x signal decay time constant
 g = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
