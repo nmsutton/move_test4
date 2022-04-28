@@ -42,13 +42,13 @@ in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
 %ext_ie=68*(B.^20)'; % excitatory input
 ext_ie=60*(B.^22)'; % excitatory input
-pd_match=88;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_match=67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
-gc_to_in_wt = 180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
+gc_to_in_wt = 180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 in_to_gc_wt = .45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
@@ -56,7 +56,7 @@ global cap_u tau_u tau_x tau_d g u_ei x_ei u_ie x_ie;
 cap_u = 0.2; % U, utilization
 tau_u = 40.0; % U signal decay time constant
 tau_x = 100.0; % x signal decay time constant
-tau_d = 5.0; % x signal decay time constant
+tau_d = 30.0; % x signal decay time constant
 g = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
 x_ei = ones(ncells,1); % x before spike update
@@ -69,7 +69,7 @@ if true
     max_ind = sqrt(size(mex_hat(:,1),1));
     for x = 1:max_ind
         for y = 1:max_ind
-            ind = ((y-1) * max_ind) + x
+            ind = ((y-1) * max_ind) + x;
             if (get_pd(x,y) == 'r')       
                 ext_ie(ind) = pd_match;               
             else
@@ -193,16 +193,16 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
 	    end    
     end
 	% simple synapse
-	if true 
+	if 0 
 		weight = gc_to_in_wt*gc_firing;
-	    gc_ie = gc_ie + (-gc_ie + weight)/gcintau;
+	    %gc_ie = gc_ie + (-gc_ie + weight)/gcintau;
+	    gc_ie = gc_ie + -gc_ie/gcintau + weight/gcintau;
 	end
     % tm model synapse
-    if false
-    	gc_to_in_wt = 100;
-    	spk = gc_firing(1,:);
-    	gc_ie = tm_synapse(u_ei,x_ei,gc_ie,cap_u,tau_u,tau_x, ...
-    						tau_d,g,gc_to_in_wt,spk);
+    if 1
+    	%gc_to_in_wt = 100;
+    	[u_ei x_ei gc_ie] = tm_synapse(u_ei,x_ei,gc_ie,cap_u,tau_u,tau_x, ...
+    						tau_d,g,gc_to_in_wt,gc_firing);
     	%ts=0.5; % time step of 0.5 ms for numerical stability
 		%u_ei=u_ei+ts*((-u_ei/tau_u)+(cap_u*(1-u_ei))*spk);
 		%disp("u_ei");
