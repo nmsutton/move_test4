@@ -2,8 +2,8 @@
 % Nate Sutton 2022
 clear all;
 clc;
-simdur = 1010;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
-spiking_bin = 40;
+simdur = 410;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
+spiking_bin = 40;%40;
 
 ncells = 900; % total number of cells per layer
 Ne=ncells; Ni=ncells;
@@ -48,20 +48,20 @@ load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
-gc_to_in_wt = 0.2;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
+gc_to_in_wt = 180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 in_to_gc_wt = .45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
-global cap_u tau_u tau_x tau_d g u_ei x_ei u_ie x_ie
+global cap_u tau_u tau_x tau_d g u_ei x_ei u_ie x_ie;
 cap_u = 0.2; % U, utilization
 tau_u = 40.0; % U signal decay time constant
 tau_x = 100.0; % x signal decay time constant
 tau_d = 5.0; % x signal decay time constant
 g = 1.0;
-u_ei = 0.0; % u before spike update
-x_ei = 1.0; % x before spike update
-u_ie = 0.0; % u before spike update
-x_ie = 1.0; % x before spike update
+u_ei = zeros(ncells,1); % u before spike update
+x_ei = ones(ncells,1); % x before spike update
+u_ie = zeros(ncells,1); % u before spike update
+x_ie = ones(ncells,1); % x before spike update
 %i = 1;
 %A = 2.0;
 
@@ -184,22 +184,39 @@ end
 
 function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit, gc_to_in_wt)
     % generate gc to in signaling
-    o = ones(ncells,1);    
-	gc_firing = zeros(ncells); 
+    global cap_u tau_u tau_x tau_d g u_ei x_ei u_ie x_ie; 
+	gc_firing = zeros(ncells,1);
 	for i=1:ncells
         spike_found = find_spike(i,t,gc_firings);
 		if spike_found == true
-	        gc_firing(:,i) = gc_firing(:,i)+1;
+	        gc_firing(i) = gc_firing(i)+1;
 	    end    
     end
-	gcin_current = (gc_to_in_wt*gc_firing')';
-	gcin_summed = gcin_current'*o;    
-    gc_ie = gc_ie + (gcin_summed - gc_ie)/gcintau;
+	% simple synapse
+	if true 
+		weight = gc_to_in_wt*gc_firing;
+	    gc_ie = gc_ie + (-gc_ie + weight)/gcintau;
+	end
+    % tm model synapse
+    if false
+    	gc_to_in_wt = 100;
+    	spk = gc_firing(1,:);
+    	gc_ie = tm_synapse(u_ei,x_ei,gc_ie,cap_u,tau_u,tau_x, ...
+    						tau_d,g,gc_to_in_wt,spk);
+    	%ts=0.5; % time step of 0.5 ms for numerical stability
+		%u_ei=u_ei+ts*((-u_ei/tau_u)+(cap_u*(1-u_ei))*spk);
+		%disp("u_ei");
+		%disp(size(u_ei));
+		%disp(size(spk));
+		%u_ei=u_ei+ts*((-u_ei/tau_u)+(cap_u*(1-u_ei)).*spk');
+		%disp(size(test));
+    end
+
     %disp(gc_firing(772));
    	%disp(gc_ie(772));
    	%fprintf("t:%d i:%f\n",t,gc_ie(772));
 	gc_ii = zeros(1,900)';
-	n= ncells;
+	%n= ncells;
 	%fprintf("t:%d %f=%f+(0.04*%f.^2+5*%f+140-%f+%f-%f)\n",t,(vi(n)+(0.04*vi(n).^2+5*vi(n)+140-ui(n)+gc_ie(n)-gc_ii(n))),vi(n),vi(n),vi(n),ui(n),gc_ie(n),gc_ii(n));	
 	[vi, ui] = iznrn(vi, ui, p2, in_fired, gc_ie, gc_ii);
 	%fprintf("t:%d vi:%f\n",t,vi(nrn_monit));
@@ -220,7 +237,7 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 	%fprintf("t:%d s:%d\n",t,sum(in_firing(1,:)));
 	%disp(in_firing(1,:));
 	ingc_summed = ingc_current'*o;  
-    in_ii = in_ii + (ingc_summed - in_ii)/gcintau;
+    in_ii = in_ii + (-in_ii + ingc_summed)/gcintau;
     %fprintf("t:%d i:%f\n",t,in_ii(nrn_monit));
 end
 
