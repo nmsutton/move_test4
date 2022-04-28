@@ -52,12 +52,18 @@ gc_to_in_wt = 25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%
 in_to_gc_wt = .45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
-global cap_u tau_u tau_x tau_d g u_ei x_ei u_ie x_ie;
-cap_u = .7;%.8;%9;%0.2; % U, utilization
-tau_u = 15;%40.0; % U signal decay time constant
-tau_x = 7.5;%15;%30;%100.0; % x signal decay time constant
-tau_d = 30.0; % x signal decay time constant
-g = 1.0;
+global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei ...
+	   cap_ui tau_ui tau_xi tau_di gie u_ie x_ie;
+cap_ue = .7;%.8;%9;%0.2; % U, utilization
+tau_ue = 15;%40.0; % U signal decay time constant
+tau_xe = 7.5;%15;%30;%100.0; % x signal decay time constant
+tau_de = 30.0; % x signal decay time constant
+gei = 1.0;
+cap_ui = 1;%.8;%9;%0.2; % U, utilization
+tau_ui = 30;%40.0; % U signal decay time constant
+tau_xi = 30;%15;%30;%100.0; % x signal decay time constant
+tau_di = 30.0; % x signal decay time constant
+gie = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
 x_ei = ones(ncells,1); % x before spike update
 u_ie = zeros(ncells,1); % u before spike update
@@ -184,7 +190,7 @@ end
 
 function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit, gc_to_in_wt)
     % generate gc to in signaling
-    global cap_u tau_u tau_x tau_d g u_ei x_ei u_ie x_ie; 
+    global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei;
 	gc_firing = zeros(ncells,1);
 	for i=1:ncells
         spike_found = find_spike(i,t,gc_firings);
@@ -192,17 +198,16 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
 	        gc_firing(i) = gc_firing(i)+1;
 	    end    
     end
-	% simple synapse
+	% simple synapse for one-to-one connections
 	if 0 
 		weight = gc_to_in_wt*gc_firing;
-	    %gc_ie = gc_ie + (-gc_ie + weight)/gcintau;
-	    gc_ie = gc_ie + -gc_ie/gcintau + weight/gcintau;
+	    gc_ie = gc_ie + -gc_ie/gcintau + weight/gcintau; %gc_ie = gc_ie + (-gc_ie + weight)/gcintau;
 	end
     % tm model synapse
     if 1
     	%gc_to_in_wt = 100;
-    	[u_ei x_ei gc_ie] = tm_synapse(u_ei,x_ei,gc_ie,cap_u,tau_u,tau_x, ...
-    						tau_d,g,gc_to_in_wt,gc_firing);
+    	[u_ei x_ei gc_ie] = tm_synapse(u_ei,x_ei,gc_ie,cap_ue,tau_ue,tau_xe, ...
+    						tau_de,gei,gc_to_in_wt,gc_firing);
     	%ts=0.5; % time step of 0.5 ms for numerical stability
 		%u_ei=u_ei+ts*((-u_ei/tau_u)+(cap_u*(1-u_ei))*spk);
 		%disp("u_ei");
@@ -224,6 +229,7 @@ end
 
 function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit, in_to_gc_wt);
 	% generate in to gc signaling
+	global cap_ui tau_ui tau_xi tau_di gie u_ie x_ie;
 	o = ones(ncells,1);
 	in_firing = zeros(ncells); 
 	for i=1:ncells
@@ -232,12 +238,19 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 	        in_firing(:,i) = in_firing(:,i)+1;
 	    end    
     end
-	ingc_current = ((mex_hat*in_to_gc_wt)*in_firing')';
+    if 1 % simple synapse for one-to-many connections
+		ingc_current = ((mex_hat*in_to_gc_wt)*in_firing')';
+		ingc_summed = ingc_current'*o;  
+	    in_ii = in_ii + (-in_ii + ingc_summed)/gcintau;		
+	end
+	if 0
+		weights = mex_hat*in_to_gc_wt;
+		[u_ie x_ie in_ii] = tm_synapse(u_ie,x_ie,in_ii,cap_ui,tau_ui,tau_xi, ...
+    						tau_di,gie,weights,in_firing);
+	end
 	%fprintf("t:%d i:%d\n",t,sum(find(in_firing(1,:)>=1),1));
 	%fprintf("t:%d s:%d\n",t,sum(in_firing(1,:)));
 	%disp(in_firing(1,:));
-	ingc_summed = ingc_current'*o;  
-    in_ii = in_ii + (-in_ii + ingc_summed)/gcintau;
     %fprintf("t:%d i:%f\n",t,in_ii(nrn_monit));
 end
 
