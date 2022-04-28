@@ -42,7 +42,7 @@ in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
 %ext_ie=68*(B.^20)'; % excitatory input
 ext_ie=60*(B.^22)'; % excitatory input
-pd_match=67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_match=88;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;
@@ -53,9 +53,9 @@ in_to_gc_wt = .45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
 global cap_u tau_u tau_x tau_d g u_ei x_ei u_ie x_ie;
-cap_u = 0.2; % U, utilization
-tau_u = 40.0; % U signal decay time constant
-tau_x = 100.0; % x signal decay time constant
+cap_u = 1;%0.2; % U, utilization
+tau_u = 30;%40.0; % U signal decay time constant
+tau_x = 30;%100.0; % x signal decay time constant
 tau_d = 30.0; % x signal decay time constant
 g = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
