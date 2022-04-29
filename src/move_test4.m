@@ -28,11 +28,11 @@ vi=-65*ones(Ni,1); % inhib neurons
 ui=bi.*vi;
 load('Ii_initial2.mat'); % initial gc firing
 Ii = Ii_initial2;
-load('gc_ie_initial.mat'); % initial gc firing
-gc_ie = gc_ie_initial;
+load('gc_ie_initial2.mat'); % initial gc firing
+gc_ie = gc_ie_initial2;
 %gc_ie = Ii_initial2;%zeros(ncells,1);
-load('in_ii_initial.mat'); % initial gc firing
-in_ii = in_ii_initial;
+load('in_ii_initial2.mat'); % initial gc firing
+in_ii = in_ii_initial2;
 %in_ii = zeros(ncells,1);
 load('init_firings4.mat'); % initial gc firing
 firings = init_firings4;
@@ -42,7 +42,7 @@ in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
 %ext_ie=68*(B.^20)'; % excitatory input
 ext_ie=60*(B.^22)'; % excitatory input
-pd_match=68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_match=80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;
@@ -59,9 +59,9 @@ tau_ue = 15;%40.0; % U signal decay time constant
 tau_xe = 7.5;%15;%30;%100.0; % x signal decay time constant
 tau_de = 30.0; % x signal decay time constant
 gei = 1.0;
-cap_ui = .8;%1;%.8;%9;%0.2; % U, utilization
-tau_ui = 50;%30;%40.0; % U signal decay time constant
-tau_xi = 30;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant
+cap_ui = .6;%.8;%1;%.8;%9;%0.2; % U, utilization
+tau_ui = 50;%50;%30;%40.0; % U signal decay time constant
+tau_xi = 25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant
 tau_di = 40.0; % x signal decay time constant
 gie = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
