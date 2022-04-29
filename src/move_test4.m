@@ -42,24 +42,24 @@ in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
 %ext_ie=68*(B.^20)'; % excitatory input
 ext_ie=60*(B.^22)'; % excitatory input
-pd_match=80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_match=75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
 gc_to_in_wt = 25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
-in_to_gc_wt = 70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
+in_to_gc_wt = 60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
 global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei ...
 	   cap_ui tau_ui tau_xi tau_di gie u_ie x_ie;
-cap_ue = .7;%.8;%9;%0.2; % U, utilization
+cap_ue = .6;%.7;%.8;%9;%0.2; % U, utilization
 tau_ue = 15;%40.0; % U signal decay time constant
 tau_xe = 7.5;%15;%30;%100.0; % x signal decay time constant
 tau_de = 30.0; % x signal decay time constant
 gei = 1.0;
-cap_ui = .6;%.8;%1;%.8;%9;%0.2; % U, utilization
+cap_ui = .4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
 tau_ui = 30;%50;%50;%30;%40.0; % U signal decay time constant
 tau_xi = 25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant
 tau_di = 40.0; % x signal decay time constant
