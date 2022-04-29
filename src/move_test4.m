@@ -7,25 +7,35 @@ spiking_bin = 40;%40;
 
 ncells = 900; % total number of cells per layer
 Ne=ncells; Ni=ncells;
-a=[0.1*ones(Ne,1)];%a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
-b=[0.2*ones(Ne,1)];
-c=[-65*ones(Ne,1)];
-d=[8*ones(Ne,1)];
-ai=[0.05*ones(Ni,1)];%ai=[0.1*ones(Ni,1)];%ai=[0.02*ones(Ni,1)];
-bi=[0.25*ones(Ni,1)];
-ci=[-65*ones(Ni,1)];
-di=[2*ones(Ni,1)];
-p = [a, b, c, d];
-p2 = [ai, bi, ci, di];
+a_e=[0.03*ones(Ne,1)];%a_e=[0.1*ones(Ne,1)];%a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
+b_e=[-2.0*ones(Ne,1)];%b_e=[0.2*ones(Ne,1)];
+c_e=[-50*ones(Ne,1)];%c_e=[-65*ones(Ne,1)];
+d_e=[100*ones(Ne,1)];%d_e=[8*ones(Ne,1)];
+k_e=[0.7*ones(Ne,1)]; 
+vr_e=[-60.0*ones(Ne,1)]; % resting voltage
+vt_e=[-40.0*ones(Ne,1)]; % threshold voltage
+vp_e=[35*ones(Ne,1)];%vp_e=[30*ones(Ne,1)]; % v peak; spike cut off value
+cap_e=[100*ones(Ne,1)]; % cell capacitance
+a_i=[0.15*ones(Ni,1)];%a_i=[0.05*ones(Ni,1)];%ai=[0.1*ones(Ni,1)];%ai=[0.02*ones(Ni,1)];
+b_i=[8.0*ones(Ni,1)];%b_i=[0.25*ones(Ni,1)];
+c_i=[-55*ones(Ni,1)];%c_i=[-65*ones(Ni,1)];
+d_i=[200*ones(Ni,1)];%d_i=[2*ones(Ni,1)];
+k_i=[1*ones(Ni,1)]; 
+vr_i=[1*ones(Ni,1)]; % resting voltage
+vt_i=[-40*ones(Ni,1)]; % threshold voltage
+vp_i=[25*ones(Ni,1)]; % v peak; spike cut off value
+cap_i=[20*ones(Ni,1)]; % cell capacitance
+p = [a_e, b_e, c_e, d_e, k_e, vr_e, vt_e, vp_e, cap_e];
+p2 = [a_i, b_i, c_i, d_i, k_i, vr_i, vt_i, vp_i, cap_i];
 tau = 35; %% Cell parameters % grid cell synapse time constant, ms
 gcintau = 30;%35;
 ingctau = 30;%35;
 t = 0; % simulation time variable, ms
 skip_t = 10; % initial time to skip because pregenerated initial firing is loaded in this time
 v=-65*ones(Ne,1); % Initial values of v
-u=b.*v;
+u=b_e.*v;
 vi=-65*ones(Ni,1); % inhib neurons
-ui=bi.*vi;
+ui=b_i.*vi;
 load('Ii_initial2.mat'); % initial gc firing
 Ii = Ii_initial2;
 load('gc_ie_initial2.mat'); % initial gc firing
@@ -40,15 +50,16 @@ gc_firings = init_firings4;%[10,5];
 load('in_firings_init.mat');
 in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
-ext_ie=60*(B.^22)'; % excitatory input
-pd_match=75;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+%ext_ie=60*(B.^22)'; % excitatory input
+ext_ie=ones(ncells,1);
+pd_match=75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;%3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
-gc_to_in_wt = 25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
-in_to_gc_wt = 60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
+gc_to_in_wt = 25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
+in_to_gc_wt = 50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
 global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei ...
@@ -61,16 +72,14 @@ gei = 1.0;
 cap_ui = .4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
 tau_ui = 30;%50;%50;%30;%40.0; % U signal decay time constant
 tau_xi = 25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant
-tau_di = 40.0; % x signal decay time constant
+tau_di = 40;%40.0; % x signal decay time constant
 gie = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
 x_ei = ones(ncells,1); % x before spike update
 u_ie = zeros(ncells,1); % u before spike update
 x_ie = ones(ncells,1); % x before spike update
-%i = 1;
-%A = 2.0;
 
-if true
+if true % set external input to grid cell layer. input depends on pd match.
     max_ind = sqrt(size(mex_hat(:,1),1));
     for x = 1:max_ind
         for y = 1:max_ind
@@ -87,7 +96,6 @@ end
 ccol = load('../../move_test3/src/neuron_space_colormap.mat');
 savevideo = true;
 h = figure('color','w','name','');
-%numberOfFrames = simdur-skip_t;
 numberOfFrames = (simdur-skip_t)/spiking_bin;
 allTheFrames = cell(numberOfFrames,1);
 vidHeight = 337;%342;
@@ -99,15 +107,14 @@ myMovie = struct('cdata', allTheFrames, 'colormap', allTheColorMaps);
 set(gcf, 'nextplot', 'replacechildren'); 
 set(gcf, 'renderer', 'zbuffer');
 caxis manual;          % allow subsequent plots to use the same color limits
-gc_voltage=[]; in_voltage=[];
+gc_voltage=[]; in_voltage=[]; in_fired=[];
 nrn_monit=702;%435;%772;%702;
-in_fired=[];
 
 for t=skip_t:simdur % simulation of 1000 ms
-	gc_fired=find(v>=30); % indices of spikes
+	gc_fired=find(v>=vp_e); % indices of spikes
 	gc_firings=[gc_firings; t+0*gc_fired,gc_fired];
     [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit, gc_to_in_wt);
-	in_fired=find(vi>=30); % indices of spikes
+	in_fired=find(vi>=vp_i); % indices of spikes
     in_firings=[in_firings; t+0*in_fired,in_fired];
     [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit, in_to_gc_wt);
     [v, u] = iznrn(v, u, p, gc_fired, ext_ie, in_ii);
@@ -130,10 +137,9 @@ if savevideo
 	close(videofile)
 end
 
-disp(size(find(gc_firings(:,2)==nrn_monit))); % number of spikes from selected neuron
-%disp("voltage");
-%disp(voltage);
 if false
+	%disp(size(find(gc_firings(:,2)==nrn_monit))); % number of spikes from selected neuron
+	%disp("voltage"); %disp(voltage);
 	figure(1);
 	plot(gc_voltage);
 	ylim([-80 30])
@@ -145,11 +151,15 @@ if false
 end
 
 function [v, u] = iznrn(v, u, p, fired, Ie, Ii)
-	a=p(:,1);b=p(:,2);c=p(:,3);d=p(:,4);
+	a=p(:,1);b=p(:,2);c=p(:,3);d=p(:,4);k=p(:,5); 
+	v_r=p(:,6);v_t=p(:,7);v_p=p(:,8);C=p(:,9);fired=v_p;
+
 	v(fired)=c(fired);
 	u(fired)=u(fired)+d(fired);
-	v=v+(0.04*v.^2+5*v+140-u+Ie-Ii); % step 1.0 ms
-	u=u+a.*(b.*v-u);
+	%v=v+(0.04*v.^2+5*v+140-u+Ie-Ii); % step 1.0 ms
+	%u=u+a.*(b.*v-u);
+	v=v+((k.*(v-v_r).*(v-v_t)-u+Ie-Ii)./C);
+	u=u+a.*(b.*(v-v_r)-u);
 
 	% avoid NaN issue
 	nans = find(isnan(v));
@@ -222,7 +232,7 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
     %disp(gc_firing(772));
    	%disp(gc_ie(772));
    	%fprintf("t:%d i:%f\n",t,gc_ie(772));
-	gc_ii = zeros(1,900)';
+	gc_ii = zeros(900,1);
 	%n= ncells;
 	%fprintf("t:%d %f=%f+(0.04*%f.^2+5*%f+140-%f+%f-%f)\n",t,(vi(n)+(0.04*vi(n).^2+5*vi(n)+140-ui(n)+gc_ie(n)-gc_ii(n))),vi(n),vi(n),vi(n),ui(n),gc_ie(n),gc_ii(n));	
 	[vi, ui] = iznrn(vi, ui, p2, in_fired, gc_ie, gc_ii);
