@@ -7,11 +7,11 @@ spiking_bin = 40;%40;
 
 ncells = 900; % total number of cells per layer
 Ne=ncells; Ni=ncells;
-a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
+a=[0.1*ones(Ne,1)];%a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
 b=[0.2*ones(Ne,1)];
 c=[-65*ones(Ne,1)];
 d=[8*ones(Ne,1)];
-ai=[0.1*ones(Ni,1)];%ai=[0.02*ones(Ni,1)];
+ai=[0.05*ones(Ni,1)];%ai=[0.1*ones(Ni,1)];%ai=[0.02*ones(Ni,1)];
 bi=[0.25*ones(Ni,1)];
 ci=[-65*ones(Ni,1)];
 di=[2*ones(Ni,1)];
@@ -40,21 +40,20 @@ gc_firings = init_firings4;%[10,5];
 load('in_firings_init.mat');
 in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
-%ext_ie=68*(B.^20)'; % excitatory input
 ext_ie=60*(B.^22)'; % excitatory input
-pd_match=75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_match=75;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
-mex_hat = mex_hat3*3;
+mex_hat = mex_hat3*3;%3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
-gc_to_in_wt = 25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
+gc_to_in_wt = 25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 in_to_gc_wt = 60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
 global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei ...
 	   cap_ui tau_ui tau_xi tau_di gie u_ie x_ie;
-cap_ue = .6;%.7;%.8;%9;%0.2; % U, utilization
+cap_ue = .5;%.6;%.5;%.6;%.7;%.8;%9;%0.2; % U, utilization
 tau_ue = 15;%40.0; % U signal decay time constant
 tau_xe = 7.5;%15;%30;%100.0; % x signal decay time constant
 tau_de = 30.0; % x signal decay time constant
