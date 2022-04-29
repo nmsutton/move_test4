@@ -12,4 +12,4 @@ function [u x i]=tm_synapse(u,x,i,cap_u,tau_u,tau_x,tau_d,g,A,spk)
 	%u=ones(900,1);%*0.00667;
 	%x=ones(900,1)*.033;%.021;
 	%i=i+ts*(-i/(tau_d*g)+A*u.*x.*spk);
-	i=i+ts*(-i/(tau_d*g)+A*u.*x.*spk);
+	i=i+ts*(-i/(tau_d*g)+A.*u.*x.*spk);
