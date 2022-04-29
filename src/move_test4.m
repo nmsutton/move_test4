@@ -2,7 +2,7 @@
 % Nate Sutton 2022
 clear all;
 clc;
-simdur = 2010;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
+simdur = 490;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
 spiking_bin = 40;%40;
 
 ncells = 900; % total number of cells per layer
@@ -21,7 +21,7 @@ b_i=[8.0*ones(Ni,1)];%b_i=[0.25*ones(Ni,1)];
 c_i=[-55*ones(Ni,1)];%c_i=[-65*ones(Ni,1)];
 d_i=[200*ones(Ni,1)];%d_i=[2*ones(Ni,1)];
 k_i=[1*ones(Ni,1)]; 
-vr_i=[1*ones(Ni,1)]; % resting voltage
+vr_i=[-55*ones(Ni,1)]; % resting voltage
 vt_i=[-40*ones(Ni,1)]; % threshold voltage
 vp_i=[25*ones(Ni,1)]; % v peak; spike cut off value
 cap_i=[20*ones(Ni,1)]; % cell capacitance
@@ -52,8 +52,8 @@ in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
 %ext_ie=60*(B.^22)'; % excitatory input
 ext_ie=ones(ncells,1);
-pd_match=75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
-pd_nonmatch=60;%90;%30;%80;%60;
+pd_match=75*55;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_nonmatch=60*55;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;%3;
 mex_hat = mex_hat-0.0022;
