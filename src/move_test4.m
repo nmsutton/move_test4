@@ -2,7 +2,7 @@
 % Nate Sutton 2022
 clear all;
 clc;
-simdur = 330;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
+simdur = 530;%170;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
 spiking_bin = 40;%40;
 
 ncells = 900; % total number of cells per layer
@@ -72,10 +72,10 @@ tau_ue = 15;%40.0; % U signal decay time constant
 tau_xe = 7.5;%15;%30;%100.0; % x signal decay time constant
 tau_de = 30.0; % x signal decay time constant
 gei = 1.0;
-cap_ui = .4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
-tau_ui = 30;%50;%50;%30;%40.0; % U signal decay time constant
-tau_xi = 25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant
-tau_di = 40;%40.0; % x signal decay time constant
+cap_ui = .8;%1;%.4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
+tau_ui = 60;%50;%50;%30;%40.0; % U signal decay time constant
+tau_xi = 90;%25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant
+tau_di = 15;%40;%40.0; % x signal decay time constant
 gie = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
 x_ei = ones(ncells,1); % x before spike update
@@ -266,9 +266,9 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 		%weights = mex_hat*in_to_gc_wt;
 		weights = ((mex_hat*in_to_gc_wt).*in_firing');
 		weights = weights*ones(ncells,1);
-		in_ii = in_ii - in_ii/30 + weights.*0.033;%.*in_firing;
-		%[u_ie x_ie in_ii] = tm_synapse(u_ie,x_ie,in_ii,cap_ui,tau_ui,tau_xi, ...
-    	%					tau_di,gie,weights,in_firing);
+		%in_ii = in_ii - in_ii/30 + weights.*0.033;%.*in_firing;
+		[u_ie x_ie in_ii] = tm_synapse(u_ie,x_ie,in_ii,cap_ui,tau_ui,tau_xi, ...
+    						tau_di,gie,weights,in_firing);
 	end
 	%fprintf("t:%d i:%d\n",t,sum(find(in_firing(1,:)>=1),1));
 	%fprintf("t:%d s:%d\n",t,sum(in_firing(1,:)));
