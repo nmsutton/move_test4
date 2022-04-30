@@ -7,15 +7,15 @@ spiking_bin = 40;%40;
 
 ncells = 900; % total number of cells per layer
 Ne=ncells; Ni=ncells;
-a_e=[0.03*ones(Ne,1)];%a_e=[0.1*ones(Ne,1)];%a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
-b_e=[-2.0*ones(Ne,1)];%b_e=[0.2*ones(Ne,1)];
-c_e=[-50*ones(Ne,1)];%c_e=[-65*ones(Ne,1)];
-d_e=[100*ones(Ne,1)];%d_e=[8*ones(Ne,1)];
-k_e=[0.7*ones(Ne,1)]; 
-vr_e=[-60.0*ones(Ne,1)]; % resting voltage
-vt_e=[-40.0*ones(Ne,1)]; % threshold voltage
-vp_e=[35*ones(Ne,1)];%vp_e=[30*ones(Ne,1)]; % v peak; spike cut off value
-cap_e=[100*ones(Ne,1)]; % cell capacitance
+a_e=[0.004*ones(Ne,1)];%a_e=[0.03*ones(Ne,1)];%a_e=[0.1*ones(Ne,1)];%a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
+b_e=[11.69*ones(Ne,1)];%b_e=[-2.0*ones(Ne,1)];%b_e=[0.2*ones(Ne,1)];
+c_e=[-52.68*ones(Ne,1)];%c_e=[-50*ones(Ne,1)];%c_e=[-65*ones(Ne,1)];
+d_e=[3.0*ones(Ne,1)];%d_e=[100*ones(Ne,1)];%d_e=[8*ones(Ne,1)];
+k_e=[0.98*ones(Ne,1)];%k_e=[0.7*ones(Ne,1)]; 
+vr_e=[-58.53*ones(Ne,1)];%vr_e=[-60.0*ones(Ne,1)]; % resting voltage
+vt_e=[-43.52*ones(Ne,1)];%vt_e=[-40.0*ones(Ne,1)]; % threshold voltage
+vp_e=[8*ones(Ne,1)];%vp_e=[35*ones(Ne,1)];%vp_e=[30*ones(Ne,1)]; % v peak; spike cut off value
+cap_e=[118.0*ones(Ne,1)];%cap_e=[100*ones(Ne,1)]; % cell capacitance
 a_i=[0.15*ones(Ni,1)];%a_i=[0.05*ones(Ni,1)];%ai=[0.1*ones(Ni,1)];%ai=[0.02*ones(Ni,1)];
 b_i=[8.0*ones(Ni,1)];%b_i=[0.25*ones(Ni,1)];
 c_i=[-55*ones(Ni,1)];%c_i=[-65*ones(Ni,1)];
@@ -36,7 +36,7 @@ v=-65*ones(Ne,1); % Initial values of v
 u=b_e.*v;
 vi=-65*ones(Ni,1); % inhib neurons
 ui=b_i.*vi;
-p9mult=165/5; % conversion from 4 param to 9 param IZ
+p9mult=165/5*1.5; % conversion from 4 param to 9 param IZ
 load('Ii_initial2.mat'); % initial gc firing
 Ii = Ii_initial2*p9mult;
 load('gc_ie_initial2.mat'); % initial gc firing
@@ -53,8 +53,8 @@ in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
 %ext_ie=60*(B.^22)'; % excitatory input
 ext_ie=ones(ncells,1);
-mult_ex = 23;%33;%23.913;%297;
-pd_match=80*mult_ex;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+mult_ex = 35;%23;%33;%23.913;%297;
+pd_match=70*mult_ex;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60*mult_ex;%60;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;%3;
@@ -73,8 +73,8 @@ tau_xe = 7.5;%15;%30;%100.0; % x signal decay time constant
 tau_de = 30.0; % x signal decay time constant
 gei = 1.0;
 cap_ui = 1;%.8;%1;%.4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
-tau_ui = 60;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant
-tau_xi = 60;%90;%25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant
+tau_ui = 60;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant; facilitations factor?
+tau_xi = 70;%60;%90;%25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant; depression factor?
 tau_di = 15;%40;%40.0; % x signal decay time constant
 gie = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
