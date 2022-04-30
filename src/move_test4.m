@@ -2,31 +2,32 @@
 % Nate Sutton 2022
 clear all;
 clc;
-simdur = 490;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
+simdur = 330;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
 spiking_bin = 40;%40;
 
 ncells = 900; % total number of cells per layer
 Ne=ncells; Ni=ncells;
-a_e=[0.004*ones(Ne,1)];%a_e=[0.1*ones(Ne,1)];%a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
-b_e=[11.69*ones(Ne,1)];%b_e=[0.2*ones(Ne,1)];
-c_e=[-52.68*ones(Ne,1)];%c_e=[-65*ones(Ne,1)];
-d_e=[3.0*ones(Ne,1)];%d_e=[8*ones(Ne,1)];
-k_e=[0.98*ones(Ne,1)]; 
-vr_e=[-58.53*ones(Ne,1)]; % resting voltage
-vt_e=[-43.52*ones(Ne,1)]; % threshold voltage
-vp_e=[8.0*ones(Ne,1)];%vp_e=[30*ones(Ne,1)]; % v peak; spike cut off value; appears to need to be whole number for calculation in matlab
-cap_e=[118.0*ones(Ne,1)]; % cell capacitance
+a_e=[0.03*ones(Ne,1)];%a_e=[0.1*ones(Ne,1)];%a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
+b_e=[-2.0*ones(Ne,1)];%b_e=[0.2*ones(Ne,1)];
+c_e=[-50*ones(Ne,1)];%c_e=[-65*ones(Ne,1)];
+d_e=[100*ones(Ne,1)];%d_e=[8*ones(Ne,1)];
+k_e=[0.7*ones(Ne,1)]; 
+vr_e=[-60.0*ones(Ne,1)]; % resting voltage
+vt_e=[-40.0*ones(Ne,1)]; % threshold voltage
+vp_e=[35*ones(Ne,1)];%vp_e=[30*ones(Ne,1)]; % v peak; spike cut off value
+cap_e=[100*ones(Ne,1)]; % cell capacitance
 a_i=[0.15*ones(Ni,1)];%a_i=[0.05*ones(Ni,1)];%ai=[0.1*ones(Ni,1)];%ai=[0.02*ones(Ni,1)];
 b_i=[8.0*ones(Ni,1)];%b_i=[0.25*ones(Ni,1)];
-c_i=[-55.0*ones(Ni,1)];%c_i=[-65*ones(Ni,1)];
-d_i=[200.0*ones(Ni,1)];%d_i=[2*ones(Ni,1)];
-k_i=[1.0*ones(Ni,1)]; 
-vr_i=[-55.0*ones(Ni,1)]; % resting voltage
-vt_i=[-40.0*ones(Ni,1)]; % threshold voltage
-vp_i=[25.0*ones(Ni,1)]; % v peak; spike cut off value
-cap_i=[20.0*ones(Ni,1)]; % cell capacitance
+c_i=[-55*ones(Ni,1)];%c_i=[-65*ones(Ni,1)];
+d_i=[200*ones(Ni,1)];%d_i=[2*ones(Ni,1)];
+k_i=[1*ones(Ni,1)]; 
+vr_i=[-55*ones(Ni,1)]; % resting voltage
+vt_i=[-40*ones(Ni,1)]; % threshold voltage
+vp_i=[20*ones(Ni,1)]; % v peak; spike cut off value
+cap_i=[140*ones(Ni,1)]; % cell capacitance
 p = [a_e, b_e, c_e, d_e, k_e, vr_e, vt_e, vp_e, cap_e];
 p2 = [a_i, b_i, c_i, d_i, k_i, vr_i, vt_i, vp_i, cap_i];
+tau = 35; %% Cell parameters % grid cell synapse time constant, ms
 gcintau = 30;%35;
 ingctau = 30;%35;
 t = 0; % simulation time variable, ms
@@ -35,13 +36,14 @@ v=-65*ones(Ne,1); % Initial values of v
 u=b_e.*v;
 vi=-65*ones(Ni,1); % inhib neurons
 ui=b_i.*vi;
+p9mult=165/5; % conversion from 4 param to 9 param IZ
 load('Ii_initial2.mat'); % initial gc firing
-Ii = Ii_initial2;
+Ii = Ii_initial2*p9mult;
 load('gc_ie_initial2.mat'); % initial gc firing
-gc_ie = gc_ie_initial2;
+gc_ie = gc_ie_initial2*p9mult;
 %gc_ie = Ii_initial2;%zeros(ncells,1);
 load('in_ii_initial2.mat'); % initial gc firing
-in_ii = in_ii_initial2;
+in_ii = in_ii_initial2*p9mult;
 %in_ii = zeros(ncells,1);
 load('init_firings4.mat'); % initial gc firing
 firings = init_firings4;
@@ -51,28 +53,30 @@ in_firings = in_firings_init;
 load('../../move_test3/data/B_saved.mat'); % velocity input matrix
 %ext_ie=60*(B.^22)'; % excitatory input
 ext_ie=ones(ncells,1);
-pd_match=470;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
-pd_nonmatch=450;%90;%30;%80;%60;
+mult_ex = 33;%23.913;%297;
+pd_match=62*mult_ex;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_nonmatch=60*mult_ex;%60;%90;%30;%80;%60;
 load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
-mex_hat = mex_hat3*50;%3;
+mex_hat = mex_hat3*3;%3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
-gc_to_in_wt = 25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
-in_to_gc_wt = 1;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
+mult_in = 330;%27;
+gc_to_in_wt = 25*mult_in;%25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
+in_to_gc_wt = 50*mult_in;%50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
 global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei ...
 	   cap_ui tau_ui tau_xi tau_di gie u_ie x_ie;
-cap_ue = .1514;%.6;%.5;%.6;%.7;%.8;%9;%0.2; % U, utilization
-tau_ue = 58.97;%40.0; % U signal decay time constant
-tau_xe = 123.7;%15;%30;%100.0; % x signal decay time constant
-tau_de = 6.632; % x signal decay time constant
-gei = 9.654;
-cap_ui = 0.1100;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
-tau_ui = 35.53;%50;%50;%30;%40.0; % U signal decay time constant
-tau_xi = 355.8;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant
-tau_di = 8.839;%40.0; % x signal decay time constant
-gie = 9.654;
+cap_ue = .3;%.5;%.6;%.5;%.6;%.7;%.8;%9;%0.2; % U, utilization
+tau_ue = 15;%40.0; % U signal decay time constant
+tau_xe = 7.5;%15;%30;%100.0; % x signal decay time constant
+tau_de = 30.0; % x signal decay time constant
+gei = 1.0;
+cap_ui = .4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
+tau_ui = 30;%50;%50;%30;%40.0; % U signal decay time constant
+tau_xi = 25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant
+tau_di = 40;%40.0; % x signal decay time constant
+gie = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
 x_ei = ones(ncells,1); % x before spike update
 u_ie = zeros(ncells,1); % u before spike update
@@ -151,24 +155,26 @@ end
 
 function [v, u] = iznrn(v, u, p, fired, Ie, Ii)
 	a=p(:,1);b=p(:,2);c=p(:,3);d=p(:,4);k=p(:,5); 
-	v_r=p(:,6);v_t=p(:,7);v_p=p(:,8);C=p(:,9);fired=v_p;
+	v_r=p(:,6);v_t=p(:,7);v_p=p(:,8);C=p(:,9);
 
 	v(fired)=c(fired);
 	u(fired)=u(fired)+d(fired);
 	%v=v+(0.04*v.^2+5*v+140-u+Ie-Ii); % step 1.0 ms
 	%u=u+a.*(b.*v-u);
-	v=v+((k.*(v-v_r).*(v-v_t)-u+Ie-Ii)./C);
+	I = Ie-Ii;
+    I = I.*(I>0); % no negative values
+	v=v+((k.*(v-v_r).*(v-v_t)-u+I)./C);
 	u=u+a.*(b.*(v-v_r)-u);
 
 	% avoid NaN issue
 	nans = find(isnan(v));
 	if size(nans)>0
-		v(nans) = c(1);
+	%	v(nans) = c(1);
 	end
 	% hard limit on v to avoid inf value issue
 	highval = find(v>1000000);
 	if size(highval)>0
-		v(highval) = c(1);
+	%	v(highval) = c(1);
 	end
 end
 
@@ -207,12 +213,12 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
 	    end    
     end
 	% simple synapse for one-to-one connections
-	if 0 
+	if 1 
 		weight = gc_to_in_wt*gc_firing;
 	    gc_ie = gc_ie + -gc_ie/gcintau + weight/gcintau; %gc_ie = gc_ie + (-gc_ie + weight)/gcintau;
 	end
     % tm model synapse
-    if 1
+    if 0
     	%gc_to_in_wt = 100;
     	weights = gc_to_in_wt*gc_firing;
     	%[u_ei x_ei gc_ie] = tm_synapse(u_ei,x_ei,gc_ie,cap_ue,tau_ue,tau_xe, ...
@@ -248,7 +254,7 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 	        in_firing(i) = in_firing(i)+1;
 	    end    
     end
-    if 0 % simple synapse for one-to-many connections
+    if 1 % simple synapse for one-to-many connections
     	% 900x900 matrix converted to 900x1 matrix because it appears calcs are 
     	% equivalent to larger matrix and saves comp time. E.g., all individual 
     	% weights are added up for 30x30 gc layer eventually anyway.
@@ -256,7 +262,7 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 		ingc_summed = ingc_current*ones(ncells,1);  
 	    in_ii = in_ii - in_ii/gcintau + ingc_summed/gcintau;		
 	end
-	if 1 % tm synapse model
+	if 0 % tm synapse model
 		%weights = mex_hat*in_to_gc_wt;
 		weights = ((mex_hat*in_to_gc_wt).*in_firing');
 		weights = weights*ones(ncells,1);
