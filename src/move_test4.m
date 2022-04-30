@@ -213,12 +213,12 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
 	    end    
     end
 	% simple synapse for one-to-one connections
-	if 1 
+	if 0 
 		weight = gc_to_in_wt*gc_firing;
 	    gc_ie = gc_ie + -gc_ie/gcintau + weight/gcintau; %gc_ie = gc_ie + (-gc_ie + weight)/gcintau;
 	end
     % tm model synapse
-    if 0
+    if 1
     	%gc_to_in_wt = 100;
     	weights = gc_to_in_wt*gc_firing;
     	%[u_ei x_ei gc_ie] = tm_synapse(u_ei,x_ei,gc_ie,cap_ue,tau_ue,tau_xe, ...
@@ -254,7 +254,7 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 	        in_firing(i) = in_firing(i)+1;
 	    end    
     end
-    if 1 % simple synapse for one-to-many connections
+    if 0 % simple synapse for one-to-many connections
     	% 900x900 matrix converted to 900x1 matrix because it appears calcs are 
     	% equivalent to larger matrix and saves comp time. E.g., all individual 
     	% weights are added up for 30x30 gc layer eventually anyway.
@@ -262,13 +262,13 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 		ingc_summed = ingc_current*ones(ncells,1);  
 	    in_ii = in_ii - in_ii/gcintau + ingc_summed/gcintau;		
 	end
-	if 0 % tm synapse model
+	if 1 % tm synapse model
 		%weights = mex_hat*in_to_gc_wt;
 		weights = ((mex_hat*in_to_gc_wt).*in_firing');
 		weights = weights*ones(ncells,1);
-		%in_ii = in_ii - in_ii/30 + weights.*0.033;%.*in_firing;
-		[u_ie x_ie in_ii] = tm_synapse(u_ie,x_ie,in_ii,cap_ui,tau_ui,tau_xi, ...
-    						tau_di,gie,weights,in_firing);
+		in_ii = in_ii - in_ii/30 + weights.*0.033;%.*in_firing;
+		%[u_ie x_ie in_ii] = tm_synapse(u_ie,x_ie,in_ii,cap_ui,tau_ui,tau_xi, ...
+    	%					tau_di,gie,weights,in_firing);
 	end
 	%fprintf("t:%d i:%d\n",t,sum(find(in_firing(1,:)>=1),1));
 	%fprintf("t:%d s:%d\n",t,sum(in_firing(1,:)));
