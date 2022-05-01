@@ -36,22 +36,14 @@ v=-65*ones(Ne,1); % Initial values of v
 u=b_e.*v;
 vi=-65*ones(Ni,1); % inhib neurons
 ui=b_i.*vi;
-p9mult=165/5*1.5; % conversion from 4 param to 9 param IZ
-load('Ii_initial2.mat'); % initial gc firing
-Ii = Ii_initial2*p9mult;
-load('gc_ie_initial2.mat'); % initial gc firing
-gc_ie = gc_ie_initial2*p9mult;
-%gc_ie = Ii_initial2;%zeros(ncells,1);
-load('in_ii_initial2.mat'); % initial gc firing
-in_ii = in_ii_initial2*p9mult;
-%in_ii = zeros(ncells,1);
-load('init_firings4.mat'); % initial gc firing
-firings = init_firings4;
-gc_firings = init_firings4;%[10,5];
-load('in_firings_init.mat');
-in_firings = in_firings_init;
-load('../../move_test3/data/B_saved.mat'); % velocity input matrix
-%ext_ie=60*(B.^22)'; % excitatory input
+load('gc_ie_initial3.mat'); % initial gc firing
+gc_ie = gc_ie_initial3;
+load('in_ii_initial3.mat'); % initial gc firing
+in_ii = in_ii_initial3;
+load('gc_firings_init.mat'); % initial gc firing
+gc_firings = gc_firings_init;%[10,5];
+load('in_firings_init2.mat');
+in_firings = in_firings_init2;
 ext_ie=ones(ncells,1);
 mult_ex = 35;%23;%33;%23.913;%297;
 pd_match=70*mult_ex;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
@@ -72,10 +64,10 @@ tau_ue = 15;%40.0; % U signal decay time constant
 tau_xe = 7.5;%15;%30;%100.0; % x signal decay time constant
 tau_de = 30.0; % x signal decay time constant
 gei = 1.0;
-cap_ui = 1;%.8;%1;%.4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
-tau_ui = 60;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant; facilitations factor?
+cap_ui = .8;%1;%.8;%1;%.4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
+tau_ui = 70;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant; facilitations factor?
 tau_xi = 70;%60;%90;%25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant; depression factor?
-tau_di = 15;%40;%40.0; % x signal decay time constant
+tau_di = 20;%15;%40;%40.0; % x signal decay time constant
 gie = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
 x_ei = ones(ncells,1); % x before spike update
@@ -122,9 +114,6 @@ for t=skip_t:simdur % simulation of 1000 ms
     [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit, in_to_gc_wt);
     [v, u] = iznrn(v, u, p, gc_fired, ext_ie, in_ii);
     in_voltage(end+1)=vi(nrn_monit);
-
-	%Ii = inhib_curr(Ii, t, mex_hat, gc_firings, tau, nrn_monit);
-	%[v, u] = iznrn(v, u, p, gc_fired, ext_ie, Ii);
 	gc_voltage(end+1)=v(nrn_monit);
 	if savevideo & mod(t,spiking_bin) == 0
 		myMovie = heatmap(ncells, gc_firings, t, skip_t, h, myMovie, ccol, spiking_bin);
@@ -159,23 +148,10 @@ function [v, u] = iznrn(v, u, p, fired, Ie, Ii)
 
 	v(fired)=c(fired);
 	u(fired)=u(fired)+d(fired);
-	%v=v+(0.04*v.^2+5*v+140-u+Ie-Ii); % step 1.0 ms
-	%u=u+a.*(b.*v-u);
 	I = Ie-Ii;
     I = I.*(I>0); % no negative values
 	v=v+((k.*(v-v_r).*(v-v_t)-u+I)./C);
 	u=u+a.*(b.*(v-v_r)-u);
-
-	% avoid NaN issue
-	nans = find(isnan(v));
-	if size(nans)>0
-	%	v(nans) = c(1);
-	end
-	% hard limit on v to avoid inf value issue
-	highval = find(v>1000000);
-	if size(highval)>0
-	%	v(highval) = c(1);
-	end
 end
 
 function spikes = fbin(ni, startt, endt, firings) 
@@ -219,19 +195,9 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
 	end
     % tm model synapse
     if 1
-    	%gc_to_in_wt = 100;
     	weights = gc_to_in_wt*gc_firing;
-    	%[u_ei x_ei gc_ie] = tm_synapse(u_ei,x_ei,gc_ie,cap_ue,tau_ue,tau_xe, ...
-    	%					tau_de,gei,gc_to_in_wt,gc_firing);
     	[u_ei x_ei gc_ie] = tm_synapse(u_ei,x_ei,gc_ie,cap_ue,tau_ue,tau_xe, ...
     						tau_de,gei,weights,gc_firing);
-    	%ts=0.5; % time step of 0.5 ms for numerical stability
-		%u_ei=u_ei+ts*((-u_ei/tau_u)+(cap_u*(1-u_ei))*spk);
-		%disp("u_ei");
-		%disp(size(u_ei));
-		%disp(size(spk));
-		%u_ei=u_ei+ts*((-u_ei/tau_u)+(cap_u*(1-u_ei)).*spk');
-		%disp(size(test));
     end
 
     %disp(gc_firing(772));
@@ -263,7 +229,6 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 	    in_ii = in_ii - in_ii/gcintau + ingc_summed/gcintau;		
 	end
 	if 1 % tm synapse model
-		%weights = mex_hat*in_to_gc_wt;
 		weights = ((mex_hat*in_to_gc_wt).*in_firing');
 		weights = weights*ones(ncells,1);
 		%in_ii = in_ii - in_ii/30 + weights.*0.033;%.*in_firing;
@@ -274,26 +239,6 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 	%fprintf("t:%d s:%d\n",t,sum(in_firing(1,:)));
 	%disp(in_firing(1,:));
     %fprintf("t:%d i:%f\n",t,in_ii(nrn_monit));
-end
-
-function Ii = inhib_curr(Ii, t, mex_hat, firings, tau, nrn_monit)
-	% generate inhibitory currents
-	gc_firing = zeros(size(mex_hat,1)); 
-	for i=1:size(Ii)
-        spike_found = find_spike(i,t,firings);
-		if spike_found == true
-	        gc_firing(:,i) = gc_firing(:,i)+1;
-	    end    
-    end
-    in_current = (mex_hat*gc_firing')';
-    fprintf("t:%d s:%d\n",t,sum(gc_firing(1,:)));
-
-	% calculate tau factor
-	o = ones(size(mex_hat(:,1)));
-	in_summed = in_current'*o; in_summed2 = in_summed;
-	in_summed2 = in_summed2.*(in_summed2>0); % no negative values
-	Ii = Ii + (in_summed2 - Ii)/tau;
-	%fprintf("t:%d i:%f\n",t,Ii(nrn_monit));
 end
 
 function myMovie = heatmap(ncells, firings, t, skip_t, h, myMovie, ccol, spiking_bin)
