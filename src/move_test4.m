@@ -2,7 +2,7 @@
 % Nate Sutton 2022
 clear all;
 clc;
-simdur = 2010;%530;%170;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
+simdur = 4010;%530;%170;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
 spiking_bin = 40;%40;
 
 ncells = 900; % total number of cells per layer
@@ -32,18 +32,22 @@ gcintau = 30;%35;
 ingctau = 30;%35;
 t = 0; % simulation time variable, ms
 skip_t = 10; % initial time to skip because pregenerated initial firing is loaded in this time
-v=-65*ones(Ne,1); % Initial values of v
-u=b_e.*v;
-vi=-65*ones(Ni,1); % inhib neurons
-ui=b_i.*vi;
-load('gc_ie_initial3.mat'); % initial gc firing
-gc_ie = gc_ie_initial3;
-load('in_ii_initial3.mat'); % initial gc firing
-in_ii = in_ii_initial3;
-load('gc_firings_init.mat'); % initial gc firing
-gc_firings = gc_firings_init;%[10,5];
-load('in_firings_init2.mat');
-in_firings = in_firings_init2;
+load('v_init.mat'); % initial gc firing
+v=v_init;%-65*ones(Ne,1); % Initial values of v
+load('u_init.mat'); % initial gc firing
+u=u_init;%b_e.*v;
+load('vi_init.mat'); % initial gc firing
+vi=vi_init;%-65*ones(Ni,1); % inhib neurons
+load('ui_init.mat'); % initial gc firing
+ui=ui_init;%b_i.*vi;
+load('gc_ie_init4.mat'); % initial gc firing
+gc_ie = gc_ie_init4;
+load('in_ii_init4.mat'); % initial gc firing
+in_ii = in_ii_init4;
+%load('gc_firings_init.mat'); % initial gc firing
+gc_firings = [];%gc_firings_init;%[10,5];
+%load('in_firings_init2.mat');
+in_firings = [];%in_firings_init2;
 ext_ie=ones(ncells,1);
 mult_ex = 35;%23;%33;%23.913;%297;
 pd_match=70*mult_ex;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
@@ -60,8 +64,8 @@ in_to_gc_wt = mult_in*20;%50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;
 global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei ...
 	   cap_ui tau_ui tau_xi tau_di gie u_ie x_ie;
 cap_ue = 0.1638;%.2;%0.1638;%.3;%.5;%.6;%.5;%.6;%.7;%.8;%9;%0.2; % U, utilization
-tau_ue = 17.5;%15;%40.0; % U signal decay time constant
-tau_xe = 5;%7.5;%15;%30;%100.0; % x signal decay time constant
+tau_ue = 18.5;%17.5;%15;%40.0; % U signal decay time constant
+tau_xe = 4;%5;%7.5;%15;%30;%100.0; % x signal decay time constant
 tau_de = 45;%30.0; % x signal decay time constant
 gei = 1.0;
 cap_ui = 0.1119;%1;%.8;%1;%.4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
@@ -69,10 +73,14 @@ tau_ui = 60;%70;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant; facil
 tau_xi = 40;%70;%60;%90;%25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant; depression factor?
 tau_di = 28;%22;%20;%15;%40;%40.0; % x signal decay time constant
 gie = 1.0;
-u_ei = zeros(ncells,1); % u before spike update
-x_ei = ones(ncells,1); % x before spike update
-u_ie = zeros(ncells,1); % u before spike update
-x_ie = ones(ncells,1); % x before spike update
+load('u_ei_init.mat');
+load('x_ei_init.mat');
+load('u_ie_init.mat');
+load('x_ie_init.mat');
+u_ei = u_ei_init;%zeros(ncells,1); % u before spike update
+x_ei = x_ei_init;%ones(ncells,1); % x before spike update
+u_ie = u_ie_init;%zeros(ncells,1); % u before spike update
+x_ie = x_ie_init;%ones(ncells,1); % x before spike update
 
 if true % set external input to grid cell layer. input depends on pd match.
     max_ind = sqrt(size(mex_hat(:,1),1));
