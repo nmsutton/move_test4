@@ -54,7 +54,7 @@ mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
 mult_in = 230;%250;%330;%27;
 gc_to_in_wt = 25*mult_in;%25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
-in_to_gc_wt = 30*mult_in;%50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
+in_to_gc_wt = 20*mult_in;%50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 
 % tm model synapse parameters
 global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei ...
@@ -65,9 +65,9 @@ tau_xe = 7.5;%15;%30;%100.0; % x signal decay time constant
 tau_de = 30.0; % x signal decay time constant
 gei = 1.0;
 cap_ui = 0.1119;%1;%.8;%1;%.4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
-tau_ui = 70;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant; facilitations factor?
+tau_ui = 60;%70;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant; facilitations factor?
 tau_xi = 40;%70;%60;%90;%25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant; depression factor?
-tau_di = 22;%20;%15;%40;%40.0; % x signal decay time constant
+tau_di = 28;%22;%20;%15;%40;%40.0; % x signal decay time constant
 gie = 1.0;
 u_ei = zeros(ncells,1); % u before spike update
 x_ei = ones(ncells,1); % x before spike update
@@ -150,7 +150,8 @@ function [v, u] = iznrn(v, u, p, fired, Ie, Ii)
 	u(fired)=u(fired)+d(fired);
 	I = Ie-Ii;
     I = I.*(I>0); % no negative values
-	v=v+((k.*(v-v_r).*(v-v_t)-u+I)./C);
+	v=v+0.5*((k.*(v-v_r).*(v-v_t)-u+I)./C);
+	v=v+0.5*((k.*(v-v_r).*(v-v_t)-u+I)./C);
 	u=u+a.*(b.*(v-v_r)-u);
 end
 
