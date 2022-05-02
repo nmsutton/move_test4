@@ -2,7 +2,7 @@
 % Nate Sutton 2022
 clear all;
 clc;
-simdur = 4010;%530;%170;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
+simdur = 2010;%530;%170;%530;%3010;%210;%130;%1010;%490;%1300;%100e3; % total simulation time, ms
 spiking_bin = 40;%40;
 
 ncells = 900; % total number of cells per layer
@@ -69,8 +69,8 @@ tau_de = 35;%40;%30.0; % x signal decay time constant
 gei = 1.0;
 cap_ui = 0.1119;%0.2712;%0.15;%0.1119;%1;%.8;%1;%.4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
 tau_ui = 24;%60;%70;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant; facilitations factor?
-tau_xi = 70;%60;%40;%70;%60;%90;%25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant; depression factor?
-tau_di = 23;%28;%22;%20;%15;%40;%40.0; % x signal decay time constant
+tau_xi = 120;%70;%60;%40;%70;%60;%90;%25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant; depression factor?
+tau_di = 38.5;%23;%28;%22;%20;%15;%40;%40.0; % x signal decay time constant
 gie = 1.0;
 load('u_ei_init.mat');
 load('x_ei_init.mat');
