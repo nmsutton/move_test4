@@ -56,12 +56,12 @@ mex_hat = mex_hat.*(mex_hat>0); % no negative values
 mult_ex = 35;%23;%33;%23.913;%297;
 pd_match=70*mult_ex;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60*mult_ex;%60;%90;%30;%80;%60;
-mult_in = 200;%200;%230;%250;%330;%27;
+mult_in = 0.5;%200;%200;%230;%250;%330;%27;
 gc_to_in_wt = mult_in*15;%15;%25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 in_to_gc_wt = mult_in*20;%50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 % tm model synapse parameters
-global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei ...
-	   cap_ui tau_ui tau_xi tau_di gie u_ie x_ie;
+global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei a_ei ...
+	   cap_ui tau_ui tau_xi tau_di gie u_ie x_ie a_ie;
 cap_ue = 0.1638;%0.3288;%0.2;%0.1638;%.2;%0.1638;%.3;%.5;%.6;%.5;%.6;%.7;%.8;%9;%0.2; % U, utilization
 tau_ue = 40;%18.5;%17.5;%15;%40.0; % U signal decay time constant
 tau_xe = 10;%4;%5;%7.5;%15;%30;%100.0; % x signal decay time constant
@@ -76,10 +76,12 @@ load('u_ei_init.mat');
 load('x_ei_init.mat');
 load('u_ie_init.mat');
 load('x_ie_init.mat');
-u_ei = u_ei_init;%zeros(ncells,1); % u before spike update
-x_ei = x_ei_init;%ones(ncells,1); % x before spike update
-u_ie = u_ie_init;%zeros(ncells,1); % u before spike update
-x_ie = x_ie_init;%ones(ncells,1); % x before spike update
+u_ei = zeros(ncells,1);%u_ei_init;%zeros(ncells,1); % u before spike update
+x_ei = ones(ncells,1);%x_ei_init;%ones(ncells,1); % x before spike update
+a_ei = zeros(ncells,1);
+u_ie = zeros(ncells,1);%u_ie_init;%zeros(ncells,1); % u before spike update
+x_ie = ones(ncells,1);%x_ie_init;%ones(ncells,1); % x before spike update
+a_ie = zeros(ncells,1);
 
 if true % set external input to grid cell layer. input depends on pd match.
     max_ind = sqrt(size(mex_hat(:,1),1));
@@ -188,7 +190,7 @@ end
 
 function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, p2, gcintau, ncells, nrn_monit, gc_to_in_wt)
     % generate gc to in signaling
-    global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei;
+    global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei a_ei;
 	gc_firing = zeros(ncells,1);
 	for i=1:ncells
         spike_found = find_spike(i,t,gc_firings);
@@ -204,7 +206,7 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
     % tm model synapse
     if 1
     	weights = gc_to_in_wt*gc_firing;
-    	[u_ei x_ei gc_ie] = tm_synapse(u_ei,x_ei,gc_ie,cap_ue,tau_ue,tau_xe, ...
+    	[u_ei x_ei a_ei gc_ie] = tm_synapse(u_ei,x_ei,a_ei,gc_ie,cap_ue,tau_ue,tau_xe, ...
     						tau_de,gei,weights,gc_firing);
     end
 
@@ -220,7 +222,7 @@ end
 
 function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_ii, gcintau, nrn_monit, in_to_gc_wt);
 	% generate in to gc signaling
-	global cap_ui tau_ui tau_xi tau_di gie u_ie x_ie;
+	global cap_ui tau_ui tau_xi tau_di gie u_ie x_ie a_ie;
 	in_firing = zeros(ncells,1);
 	for i=1:ncells
         spike_found = find_spike(i,t,in_firings);
@@ -240,7 +242,7 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 		weights = ((mex_hat*in_to_gc_wt).*in_firing');
 		weights = weights*ones(ncells,1);
 		%in_ii = in_ii - in_ii/30 + weights.*0.033;%.*in_firing;
-		[u_ie x_ie in_ii] = tm_synapse(u_ie,x_ie,in_ii,cap_ui,tau_ui,tau_xi, ...
+		[u_ie x_ie a_ie in_ii] = tm_synapse(u_ie,x_ie,a_ie,in_ii,cap_ui,tau_ui,tau_xi, ...
     						tau_di,gie,weights,in_firing);
 	end
 	%fprintf("t:%d i:%d\n",t,sum(find(in_firing(1,:)>=1),1));
