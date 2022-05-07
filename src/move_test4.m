@@ -53,10 +53,10 @@ load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;%3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
-mult_ex = 35;%23;%33;%23.913;%297;
+mult_ex = 35;%20;%35;%23;%33;%23.913;%297;
 pd_match=70*mult_ex;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60*mult_ex;%60;%90;%30;%80;%60;
-mult_in = 0.5;%200;%200;%230;%250;%330;%27;
+mult_in = 1000;%5000;%200;%230;%250;%330;%27;
 gc_to_in_wt = mult_in*15;%15;%25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 in_to_gc_wt = mult_in*20;%50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 % tm model synapse parameters
@@ -241,9 +241,9 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 	if 1 % tm synapse model
 		weights = ((mex_hat*in_to_gc_wt).*in_firing');
 		weights = weights*ones(ncells,1);
-		%in_ii = in_ii - in_ii/30 + weights.*0.033;%.*in_firing;
-		[u_ie x_ie a_ie in_ii] = tm_synapse(u_ie,x_ie,a_ie,in_ii,cap_ui,tau_ui,tau_xi, ...
-    						tau_di,gie,weights,in_firing);
+		in_ii = in_ii - in_ii/30 + weights.*0.033;%.*in_firing;
+		%[u_ie x_ie a_ie in_ii] = tm_synapse(u_ie,x_ie,a_ie,in_ii,cap_ui,tau_ui,tau_xi, ...
+    	%					tau_di,gie,weights,in_firing);
 	end
 	%fprintf("t:%d i:%d\n",t,sum(find(in_firing(1,:)>=1),1));
 	%fprintf("t:%d s:%d\n",t,sum(in_firing(1,:)));
