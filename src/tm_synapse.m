@@ -8,4 +8,5 @@ function [u x A i]=tm_synapse(u,x,A,i,cap_u,tau_u,tau_x,tau_d,g,w,spk)
 	%u=ones(900,1);%1;%ones(900,1);%*0.00667;
 	%x=ones(900,1)*.0333;%.0333;%ones(900,1)*.0333;%.021;    
     A=A+(-A/tau_d)+u.*x.*spk;
+    A=ones(900,1)*.0333;%.0333;%ones(900,1)*.0333;%.021;
     i=g.*w.*A;
