@@ -54,23 +54,23 @@ mex_hat = mex_hat3*3;%3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
 mult_ex = 35;%20;%35;%23;%33;%23.913;%297;
-pd_match=mult_ex*70;%60.5;%70;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_match=mult_ex*60.5;%70;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60*mult_ex;%60;%90;%30;%80;%60;
-mult_in = 900;%1000;%1000000;%1000;%5000;%200;%230;%250;%330;%27;
-gc_to_in_wt = mult_in*45;%15;%25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
+mult_in = 1900;%900;%1000;%1000000;%1000;%5000;%200;%230;%250;%330;%27;
+gc_to_in_wt = mult_in*45;%45;%15;%25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
 in_to_gc_wt = mult_in*200000;%60;%10000;%20;%.33;%500;%20;%50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 % tm model synapse parameters
 global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei a_ei ...
 	   cap_ui tau_ui tau_xi tau_di gie u_ie x_ie a_ie;
-cap_ue = 0.1638;%0.3288;%0.2;%0.1638;%.2;%0.1638;%.3;%.5;%.6;%.5;%.6;%.7;%.8;%9;%0.2; % U, utilization
-tau_ue = 40;%18.5;%17.5;%15;%40.0; % U signal decay time constant
-tau_xe = 10;%4;%5;%7.5;%15;%30;%100.0; % x signal decay time constant
-tau_de = 35;%40;%30.0; % x signal decay time constant
+cap_ue = 0.02;%0.05;%0.1638;%0.3288;%0.2;%0.1638;%.2;%0.1638;%.3;%.5;%.6;%.5;%.6;%.7;%.8;%9;%0.2; % U, utilization
+tau_ue = 10;%40;%18.5;%17.5;%15;%40.0; % U signal decay time constant
+tau_xe = 10;%10;%4;%5;%7.5;%15;%30;%100.0; % x signal decay time constant
+tau_de = 600;%400;%150;%35;%40;%30.0; % x signal decay time constant
 gei = 1.0;
-cap_ui = 0.05;%0.1119;%0.025;%0.1638;%0.01;%0.1638;%0.1119;%0.135;%0.1119;%0.2712;%0.15;%0.1119;%1;%.8;%1;%.4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
-tau_ui = 60;%10;%40;%60;%40;%60;%24;%60;%70;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant; facilitations factor?
+cap_ui = 0.02;%0.05;%0.1119;%0.025;%0.1638;%0.01;%0.1638;%0.1119;%0.135;%0.1119;%0.2712;%0.15;%0.1119;%1;%.8;%1;%.4;%.5;%.6;%.8;%1;%.8;%9;%0.2; % U, utilization
+tau_ui = 10;%60;%10;%40;%60;%40;%60;%24;%60;%70;%90;%60;%50;%50;%30;%40.0; % U signal decay time constant; facilitations factor?
 tau_xi = 10;%5;%10;%40;%80;%40;%120;%70;%60;%40;%70;%60;%90;%25;%30;%60;%30;%15;%30;%100.0; % x signal decay time constant; depression factor?
-tau_di = 400;%160;%25;%35;%28;%35;%28;%24;%20;%28;%38.5;%23;%28;%22;%20;%15;%40;%40.0; % x signal decay time constant
+tau_di = 600;%400;%160;%25;%35;%28;%35;%28;%24;%20;%28;%38.5;%23;%28;%22;%20;%15;%40;%40.0; % x signal decay time constant
 gie = 1;%1.5;%1;%1.0238;%1.0315;%1.0325;%1.0177;
 load('u_ei_init.mat');
 load('x_ei_init.mat');
@@ -201,12 +201,12 @@ function [gc_ie, vi, ui] = gc_in_signal(gc_ie, t, gc_firings, in_fired, vi, ui, 
 	    end    
     end
 	% simple synapse for one-to-one connections
-	if 1 
+	if 0 
 		weight = gc_to_in_wt*gc_firing;
 	    gc_ie = gc_ie + -gc_ie/gcintau + weight/gcintau; %gc_ie = gc_ie + (-gc_ie + weight)/gcintau;
 	end
     % tm model synapse
-    if 0
+    if 1
     	weights = gc_to_in_wt*gc_firing;    	
     	%gc_ie = gc_ie - gc_ie/30 + weights.*0.033;%.*in_firing;
     	[u_ei x_ei a_ei gc_ie] = tm_synapse(u_ei,x_ei,a_ei,gc_ie,cap_ue,tau_ue,tau_xe, ...
