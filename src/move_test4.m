@@ -7,7 +7,7 @@ spiking_bin = 40;%40;%40;
 
 ncells = 900; % total number of cells per layer
 Ne=ncells; Ni=ncells;
-a_e=[0.004*ones(Ne,1)];%a_e=[0.03*ones(Ne,1)];%a_e=[0.1*ones(Ne,1)];%a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
+a_e=[0.004*ones(Ne,1)];%[0.004*ones(Ne,1)];%a_e=[0.03*ones(Ne,1)];%a_e=[0.1*ones(Ne,1)];%a=[0.1*ones(Ne,1)];%a=[0.02*ones(Ne,1)];
 b_e=[11.69*ones(Ne,1)];%b_e=[-2.0*ones(Ne,1)];%b_e=[0.2*ones(Ne,1)];
 c_e=[-52.68*ones(Ne,1)];%c_e=[-50*ones(Ne,1)];%c_e=[-65*ones(Ne,1)];
 d_e=[3.0*ones(Ne,1)];%d_e=[100*ones(Ne,1)];%d_e=[8*ones(Ne,1)];
@@ -15,8 +15,8 @@ k_e=[0.98*ones(Ne,1)];%k_e=[0.7*ones(Ne,1)];
 vr_e=[-58.53*ones(Ne,1)];%vr_e=[-60.0*ones(Ne,1)]; % resting voltage
 vt_e=[-43.52*ones(Ne,1)];%vt_e=[-40.0*ones(Ne,1)]; % threshold voltage
 vp_e=[8*ones(Ne,1)];%vp_e=[35*ones(Ne,1)];%vp_e=[30*ones(Ne,1)]; % v peak; spike cut off value
-cap_e=[118.0*ones(Ne,1)];%cap_e=[100*ones(Ne,1)]; % cell capacitance
-a_i=[0.15*ones(Ni,1)];%a_i=[0.05*ones(Ni,1)];%ai=[0.1*ones(Ni,1)];%ai=[0.02*ones(Ni,1)];
+cap_e=[50.0*ones(Ne,1)];%[118.0*ones(Ne,1)];%cap_e=[100*ones(Ne,1)]; % cell capacitance
+a_i=[0.15*ones(Ni,1)];%[0.15*ones(Ni,1)];%a_i=[0.05*ones(Ni,1)];%ai=[0.1*ones(Ni,1)];%ai=[0.02*ones(Ni,1)];
 b_i=[8.0*ones(Ni,1)];%b_i=[0.25*ones(Ni,1)];
 c_i=[-55*ones(Ni,1)];%c_i=[-65*ones(Ni,1)];
 d_i=[200*ones(Ni,1)];%d_i=[2*ones(Ni,1)];
@@ -24,7 +24,7 @@ k_i=[1*ones(Ni,1)];
 vr_i=[-55*ones(Ni,1)]; % resting voltage
 vt_i=[-40*ones(Ni,1)]; % threshold voltage
 vp_i=[20*ones(Ni,1)]; % v peak; spike cut off value
-cap_i=[140*ones(Ni,1)]; % cell capacitance
+cap_i=[50*ones(Ni,1)];%[140*ones(Ni,1)]; % cell capacitance
 p = [a_e, b_e, c_e, d_e, k_e, vr_e, vt_e, vp_e, cap_e];
 p2 = [a_i, b_i, c_i, d_i, k_i, vr_i, vt_i, vp_i, cap_i];
 tau = 35; %% Cell parameters % grid cell synapse time constant, ms
@@ -54,7 +54,7 @@ mex_hat = mex_hat3*3;%3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
 mult_ex = 35;%20;%35;%23;%33;%23.913;%297;
-pd_match=mult_ex*60.5;%70;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
+pd_match=mult_ex*65;%60.5;%70;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60*mult_ex;%60;%90;%30;%80;%60;
 mult_in = 1900;%900;%1000;%1000000;%1000;%5000;%200;%230;%250;%330;%27;
 gc_to_in_wt = mult_in*45;%45;%15;%25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
