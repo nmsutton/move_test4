@@ -53,12 +53,12 @@ load('../../move_test3/data/mex_hat3.mat'); % load weight matrix
 mex_hat = mex_hat3*3;%3;
 mex_hat = mex_hat-0.0022;
 mex_hat = mex_hat.*(mex_hat>0); % no negative values
-mult_ex = 35;%20;%35;%23;%33;%23.913;%297;
+mult_ex = 15;%35;%20;%35;%23;%33;%23.913;%297;
 pd_match=mult_ex*100;%60.5;%70;%63%;75;%78;%75;%80;%68;%67;%132;%58;%%115;%89;%88;%74;%71.5;%83;%83;%60;%51;%42;%34.4;%43;
 pd_nonmatch=60*mult_ex;%60;%90;%30;%80;%60;
-mult_in = 1900;%900;%1000;%1000000;%1000;%5000;%200;%230;%250;%330;%27;
-gc_to_in_wt = mult_in*65;%45;%15;%25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
-in_to_gc_wt = mult_in*100000;%200000;%60;%10000;%20;%.33;%500;%20;%50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
+mult_in = 900;%900;%1000;%1000000;%1000;%5000;%200;%230;%250;%330;%27;
+gc_to_in_wt = mult_in*25;%65;%45;%15;%25;%25;%25;%180;%25;%36;%47;%100;%180;%180;%30;%39;%180;%0.4;%0.2;%0.121;%;//0.12;%0.15; % gc to in synapse weight
+in_to_gc_wt = mult_in*60;%100000;%200000;%60;%10000;%20;%.33;%500;%20;%50;%60;%70;%60;%50;%70;%410;%1200;%410;%410;%.45;%.45;%.39;%.15;%.15;%.3;%.15; % in to gc synapse weight
 % tm model synapse parameters
 global cap_ue tau_ue tau_xe tau_de gei u_ei x_ei a_ei ...
 	   cap_ui tau_ui tau_xi tau_di gie u_ie x_ie a_ie;
@@ -233,7 +233,7 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 	        in_firing(i) = in_firing(i)+1;
 	    end    
     end
-    if 0 % simple synapse for one-to-many connections
+    if 1 % simple synapse for one-to-many connections
     	% 900x900 matrix converted to 900x1 matrix because it appears calcs are 
     	% equivalent to larger matrix and saves comp time. E.g., all individual 
     	% weights are added up for 30x30 gc layer eventually anyway.
@@ -241,7 +241,7 @@ function [in_ii, in_firings] = in_gc_signal(t, mex_hat, in_firings, ncells, in_i
 		ingc_summed = ingc_current*ones(ncells,1);  
 	    in_ii = in_ii - in_ii/gcintau + ingc_summed/gcintau;		
 	end
-	if 1 % tm synapse model
+	if 0 % tm synapse model
 		weights = ((mex_hat*in_to_gc_wt).*in_firing');
 		weights = weights*ones(ncells,1);
 		%in_ii = in_ii - in_ii/30 + weights.*0.033;
